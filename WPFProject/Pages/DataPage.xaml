@@ -1,0 +1,251 @@
+﻿<Window x:Class="WPFProject.Pages.DataPage"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPFProject"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Loaded="Window_Loaded"
+        WindowStartupLocation="CenterOwner"
+        Background="#FFDEE0D2"
+        Title="DataPage" Height="450" Width="800">
+
+    <Window.Resources>
+
+        <Image x:Key="AcceptImage" Source="/Icons/check.png" Height="25" Width="25" />
+
+        <Style TargetType="Button" x:Key="RoundButton">
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5" />
+                    <Setter Property="Width" Value="50" />
+                    <Setter Property="Height" Value="50" />
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                </Style>
+            </Style.Resources>
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="16*"></ColumnDefinition>
+            <ColumnDefinition Width="773*"></ColumnDefinition>
+            <ColumnDefinition Width="20*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20*"></RowDefinition>
+            <RowDefinition Height="405*"></RowDefinition>
+            <RowDefinition Height="19*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Border 
+            Grid.Row="1" Grid.Column="1" 
+            CornerRadius="15" 
+            Background="Transparent" 
+            BorderThickness="1" BorderBrush="Gray">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="300*"></RowDefinition>
+                    <RowDefinition Height="100*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                            <ColumnDefinition Width="50*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0">
+
+                            <StackPanel Margin="10">
+                                
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    
+                                    <TextBlock Width="200" x:Name="TextBlockNameOf" Text="Название проекта"></TextBlock>
+                                    <TextBox 
+                                        x:Name="TextBoxNameOf"
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        PreviewTextInput="isOnlyCharDigitTextBox"
+                                        Text="{Binding Path=name_of, Mode=TwoWay}"></TextBox>
+                                    
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockOrganization" Text="Организация: "></TextBlock>
+                                    <TextBox 
+                                        x:Name="TextBoxOrganization" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        PreviewTextInput="isOnlyCharDigitTextBox"
+                                        Text="{Binding Path=organization, Mode=TwoWay}"></TextBox>
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockDistrict" Text="Регион: "></TextBlock>
+                                    <TextBox 
+                                        x:Name="TextBoxDistrict"
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        PreviewTextInput="isOnlyCharDigitTextBox"
+                                        Text="{Binding Path=district, Mode=TwoWay}"></TextBox>
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockReview" Text="Краткое описание товара: "></TextBlock>
+                                    <TextBox 
+                                        x:Name="TextBoxReview"
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        PreviewTextInput="isOnlyCharDigitTextBox"
+                                        Text="{Binding Path=review, Mode=TwoWay}"></TextBox>
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Border>
+
+                        <Border Grid.Column="1">
+
+                            <StackPanel Margin="10">
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockTaxes" Text="Налоговые поступления (млн. руб): "></TextBlock>
+                                    <TextBox 
+                                        x:Name="TextBoxTaxes" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        PreviewTextInput="isOnlyDigitTextBox"
+                                        Text="{Binding Path=taxes, Mode=TwoWay}">
+                                    </TextBox>
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockNumWorkers" Text="Количество работников: "></TextBlock>
+                                    <TextBox
+                                        x:Name="TextBoxNumWorkers" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        PreviewTextInput="isOnlyDigitTextBox"
+                                        Text="{Binding Path=num_workers, Mode=TwoWay}">
+                                    </TextBox>
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockPaidSalary" Text="Начисленная З/П (млн. руб): "></TextBlock>
+                                    <TextBox 
+                                        x:Name="TextBoxPaidSalary" 
+                                        Margin="0 10 0 0" Width="200" Height="20" 
+                                        PreviewTextInput="isOnlyDigitTextBox"
+                                        Text="{Binding Path=paid_salary, Mode=TwoWay}">
+                                    </TextBox>
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockRealizePeriod" Text="Сроки проекта (мес): "></TextBlock>
+                                    <TextBox 
+                                        x:Name="TextBoxRealizePeriod" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        PreviewTextInput="isOnlyDigitTextBox"
+                                        Text="{Binding Path=realize_period, Mode=TwoWay}">
+                                    </TextBox>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2">
+
+                            <StackPanel Margin="10">
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+
+                                    <TextBlock Width="200" x:Name="TextBlockCategory" Text="Категория: "></TextBlock>
+                                    <ComboBox 
+                                        x:Name="ComboboxCategory" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        
+                                        DisplayMemberPath="Key"
+                                        SelectedItem="{Binding Path=category, Mode=TwoWay}">
+                                        
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <StackPanel Margin="10"
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockCashFlow" Text="Оборот категории: "></TextBlock>
+                                    <ComboBox 
+                                        x:Name="ComboboxCashFlow" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        
+                                        DisplayMemberPath="Key"
+                                        SelectedItem="{Binding Path=cashflow_category, Mode=TwoWay}">
+                                    </ComboBox>
+                                    
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockSocialProfit" Text="Социальная значимость: "></TextBlock>
+                                    <ComboBox 
+                                        x:Name="ComboboxSocialProfit" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        
+                                        DisplayMemberPath="Key"
+                                        SelectedItem="{Binding Path=social_profit, Mode=TwoWay}">
+                                        
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <StackPanel Margin="10" 
+                                            Orientation="Vertical" HorizontalAlignment="Left">
+                                    <TextBlock Width="200" x:Name="TextBlockOriginality" Text="Оригинальность: "></TextBlock>
+                                    <ComboBox 
+                                        x:Name="ComboboxOriginality" 
+                                        Margin="0 10 0 0" Width="200" Height="20"
+                                        
+                                        DisplayMemberPath="Key"
+                                        SelectedItem="{Binding Path=originality, Mode=TwoWay}">
+                                        
+                                    </ComboBox>
+                                </StackPanel>
+
+                            </StackPanel>
+
+                        </Border>
+
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1">
+                    <StackPanel 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center">
+                        <Button
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Click="SaveRowPropertiesToSQL"
+                            Content="{StaticResource AcceptImage}"
+                            Style="{StaticResource RoundButton}"
+                            Background="WhiteSmoke"
+                            />
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</Window>
