@@ -7,13 +7,14 @@ using System.Data.SQLite;
 using System.Data;
 using System.IO;
 using System.Security.Cryptography;
+using WPFProject.Classes;
 
 namespace WPFProject
 {
     public class Database
     {
 
-        private static readonly string _rootFolder = Path.GetDirectoryName(
+        private readonly string _rootFolder = Path.GetDirectoryName(
             System.AppDomain.CurrentDomain.BaseDirectory);
 
         private SQLiteDataAdapter SQLiteAdapter;
@@ -22,54 +23,25 @@ namespace WPFProject
         private DataTable Table;
 
         private string db_path;
-        private string connectionString;
 
-        public string QuerySQL;
-
+        public string DatabasePath { get => _rootFolder + this.db_path; }
+        private string ConnectionString { get => $"Data Source={this.DatabasePath}; Version=3;"; }
 
         public Database(string db_path)
         {
-            this.db_path = _rootFolder + db_path;
-            this.connectionString = $"Data Source={db_path}; Version=3;";
-
+            this.db_path = db_path;
             this.Recover();
         }
-
-        public void Recover()
+        private void Recover()
         {
-            if (!File.Exists(db_path))
-                SQLiteConnection.CreateFile(this.db_path);
-
-            this.ExecuteCommand(
-                QuerySQL:
-                "CREATE TABLE IF NOT EXISTS usersAcc (" +
-                    "id INTEGER NOT NULL UNIQUE," +
-                    "login TEXT NOT NULL," +
-                    "password  TEXT NOT NULL," +
-                    "PRIMARY KEY(id AUTOINCREMENT))",
-                Params: new List<SQLiteParameter>());
-
-            this.ExecuteCommand(
-
-                QuerySQL:
-                "CREATE TABLE IF NOT EXISTS investTable (" +
-                    "id INTEGER NOT NULL UNIQUE," +
-                    "name_of TEXT NOT NULL," +
-                    "organization  TEXT NOT NULL," +
-                    "district  TEXT NOT NULL," +
-                    "review TEXT NOT NULL," +
-                    "category TEXT NOT NULL," +
-                    "cashflow_category TEXT NOT NULL," +
-                    "originality TEXT NOT NULL," +
-                    "social_profit TEXT NOT NULL," +
-                    "taxes TEXT NOT NULL," +
-                    "num_workers TEXT NOT NULL," +
-                    "paid_salary TEXT NOT NULL," +
-                    "realize_period TEXT NOT NULL," +
-                    "rating TEXT NOT NULL," +
-                "PRIMARY KEY(id AUTOINCREMENT));",
-
-                Params: new List<SQLiteParameter>());
+            if (!File.Exists(this.DatabasePath)) SQLiteConnection.CreateFile(this.DatabasePath);
+            this.ExecuteCommand(QuerySQL: Query.Create.UsersTable, Params: new List<SQLiteParameter>());
+            this.ExecuteCommand(QuerySQL: Query.Create.InvestTable, Params: new List<SQLiteParameter>());
+        }
+        private SQLiteCommand LoadCommandWithParameters(SQLiteCommand cmd, List<SQLiteParameter> Params)
+        {
+            foreach (SQLiteParameter param in Params) cmd.Parameters.Add(param);
+            return cmd;
         }
 
         public int ExecuteCommand(string QuerySQL, List<SQLiteParameter> Params)
@@ -77,11 +49,11 @@ namespace WPFProject
             int result = 0;
             try
             {
-                conn = new SQLiteConnection(connectionString);
+                conn = new SQLiteConnection(this.ConnectionString);
                 conn.Open();
                 cmd = conn.CreateCommand();
                 cmd.CommandText = QuerySQL;
-                cmd = this.setup_parameters(cmd, Params);
+                cmd = this.LoadCommandWithParameters(cmd, Params);
 
                 result = cmd.ExecuteNonQuery();
             }
@@ -97,44 +69,35 @@ namespace WPFProject
             return result;
         }
 
-        public SQLiteCommand setup_parameters(SQLiteCommand cmd, List<SQLiteParameter> Params)
-        {
-            foreach (SQLiteParameter param in Params) cmd.Parameters.Add(param); 
-            return cmd;
-        }
-
         public DataTable GetFilledTable(string QuerySQL, List<SQLiteParameter> Params)
         {
             SQLiteAdapter = new SQLiteDataAdapter();
             Table = new DataTable();
 
-            conn = new SQLiteConnection(connectionString);
-            conn.Open();
+            try
+            {
+                conn = new SQLiteConnection(this.ConnectionString);
+                conn.Open();
 
-            cmd = conn.CreateCommand();
-            cmd.CommandText = QuerySQL;
+                cmd = conn.CreateCommand();
+                cmd.CommandText = QuerySQL;
 
-            cmd = this.setup_parameters(cmd, Params);
+                SQLiteAdapter.SelectCommand = LoadCommandWithParameters(cmd, Params);
+                SQLiteAdapter.Fill(Table);
 
-            SQLiteAdapter.SelectCommand = cmd;
-            SQLiteAdapter.Fill(Table);
+                return Table;
+            }
+            catch
+            {
 
-            conn.Close();
+            }
+            finally
+            {
+                conn.Close();
+            }
+
 
             return Table;
-        }
-
-        public static string HashingPass(string login, string password)
-        {
-            using (SHA512CryptoServiceProvider hashAlgorithm = new SHA512CryptoServiceProvider())
-            {
-                byte[] byteValue = Encoding.UTF8.GetBytes(login + password);
-                byte[] hashValue = hashAlgorithm.ComputeHash(byteValue);
-
-                string hashString = BitConverter.ToString(hashValue);
-
-                return hashString;
-            };
         }
     }
 }

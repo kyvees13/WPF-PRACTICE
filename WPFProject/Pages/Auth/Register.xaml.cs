@@ -44,10 +44,10 @@ namespace WPFProject.Pages.Auth
             }
 
             string login = LoginBox.Text.Trim();
-            string stringHashPass = Database.HashingPass(login, PassBox.Password.Trim());
+            string stringHashPass = Cryptography.HashingPass(login, PassBox.Password.Trim());
 
             var table = db.GetFilledTable(
-                QuerySQL: "select * from usersAcc where login=@login",
+                QuerySQL: Query.Select.Login,
                 Params: new List<SQLiteParameter> { new SQLiteParameter("@login", login) });
 
 

@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using Excel = Microsoft.Office.Interop.Excel;
+using WPFProject.Classes;
 
 namespace WPFProject.Pages
 {
@@ -23,11 +24,15 @@ namespace WPFProject.Pages
     public partial class DatabaseWindow : Window
     {
 
+        private Database db = new Database(db_path: @"wpfproject.db");
+
         private static readonly string _rootFolder = System.IO.Path.GetDirectoryName(
             System.AppDomain.CurrentDomain.BaseDirectory);
 
-        public DataTable table { get; set; }
-        public Database db = new Database(db_path: @"wpfproject.db");
+        private DataTable table;
+
+        private string SearchText { get => SearchTextBox.Text.ToString(); }
+        private string ComboboxText { get => SearchCombobox.SelectedValue.ToString(); }
 
         public DatabaseWindow()
         {
@@ -36,15 +41,11 @@ namespace WPFProject.Pages
 
         private void LoadDataGrid()
         {
-            DataTable table = this.db.GetFilledTable(
-                    QuerySQL: "select * from investTable",
-                    Params: new List<SQLiteParameter> { } );
-
-            DataGridView.DataContext = null;
-            DataGridView.DataContext = table.DefaultView;
+            table = this.db.GetFilledTable(Query.Select.AllMainTable, new List<SQLiteParameter> { } );
+            RefreshDatagrid(table);
         }
 
-        private void LoadCombobox()
+        private void LoadComboboxFromDatagrid()
         {
             for (int i = 0; i < DataGridView.Columns.Count; i++)
             {
@@ -63,26 +64,29 @@ namespace WPFProject.Pages
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             this.LoadDataGrid();
-            this.LoadCombobox();
+            this.LoadComboboxFromDatagrid();
+        }
+
+        private void RefreshDatagrid(DataTable table)
+        {
+            DataGridView.DataContext = null;
+            DataGridView.DataContext = table.DefaultView;
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (String.Equals(SearchTextBox.Text, "") || String.Equals(SearchCombobox.Text, ""))
+            if (SearchTextBox.Text == "" || SearchCombobox.Text == "" )
             {
                 this.LoadDataGrid();
             }
             else
             {
-                string content = SearchTextBox.Text.ToString();
-                string tag = SearchCombobox.SelectedValue.ToString();
+                table = this.db.GetFilledTable(
 
-                DataTable table = this.db.GetFilledTable(
-                    QuerySQL: $"SELECT * FROM investTable WHERE {tag} LIKE @content",
-                    Params: new List<SQLiteParameter>() { new SQLiteParameter("@content", "%"+content+"%") });
+                    QuerySQL: new Query.Search(SearchTag: ComboboxText).GetString,
+                    Params: new List<SQLiteParameter>() { new SQLiteParameter("@content", "%"+SearchText+"%") });
 
-                DataGridView.DataContext = null;
-                DataGridView.DataContext = table.DefaultView;
+                RefreshDatagrid(table);
             }
         }
 
@@ -133,8 +137,8 @@ namespace WPFProject.Pages
                 if (answer == MessageBoxResult.Yes)
                 {
                     int result = this.db.ExecuteCommand(
-                        QuerySQL: $"DELETE FROM investTable WHERE id = @id",
-                        Params: new List<SQLiteParameter> { new SQLiteParameter("@id", id) });
+                        QuerySQL: new Query.Delete(DeleteTag: "id").GetString,
+                        Params: new List<SQLiteParameter> { new SQLiteParameter("@content", id) });
 
                     this.LoadDataGrid();
                 }

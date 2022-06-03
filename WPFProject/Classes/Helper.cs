@@ -10,58 +10,10 @@ namespace WPFProject.Classes
 {
     public class Helper
     {
-        public static readonly string insertRowQuery =
-            "INSERT INTO investTable(" +
-                "name_of," +
-                "organization," +
-                "district," +
-                "review," +
-                "category," +
-                "cashflow_category," +
-                "originality," +
-                "social_profit," +
-                "taxes," +
-                "num_workers," +
-                "paid_salary," +
-                "realize_period," +
-                "rating) " +
-            "VALUES(" +
-                "@name_of," +
-                "@organization," +
-                "@district," +
-                "@review," +
-                "@category," +
-                "@cashflow_category," +
-                "@originality," +
-                "@social_profit," +
-                "@taxes," +
-                "@num_workers," +
-                "@paid_salary," +
-                "@realize_period," +
-                "@rating) ";
-
-        public static readonly string updateRowQuery = 
-            "UPDATE investTable SET " + 
-                "name_of=@name_of," +
-                "organization=@organization," +
-                "district=@district," +
-                "review=@review," +
-                "category=@category," +
-                "cashflow_category=@cashflow_category," +
-                "originality=@originality," +
-                "social_profit=@social_profit," +
-                "taxes=@taxes," +
-                "num_workers=@num_workers," +
-                "paid_salary=@paid_salary," +
-                "realize_period=@realize_period," +
-                "rating=@rating " +
-            "WHERE id=@id ";
-
         public class ComboboxPairs
         {
             private string comboboxKey;
 
-            public ComboboxPairs() { }
             public ComboboxPairs(string comboboxKey) { this.comboboxKey = comboboxKey; }
 
             public static List<KeyValuePair<string, string>> Category = new List<KeyValuePair<string, string>>()

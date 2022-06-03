@@ -29,7 +29,7 @@ namespace WPFProject.Pages
 
         public DataPage()
         {
-            InitializeComponent(); row = new Helper.RowData(); 
+            InitializeComponent(); row = new Helper.RowData();
             this.Title = "Добавление новой записи ";
         }
         public DataPage(DataRowView currRow)
@@ -61,8 +61,8 @@ namespace WPFProject.Pages
                 return;
             }
             
-            if (row.id == null) result = db.ExecuteCommand(QuerySQL: Helper.insertRowQuery, Params: Helper.generateSQLParameters(currRow: row, isAdd: true));
-            if (row.id != null) result = db.ExecuteCommand(QuerySQL: Helper.updateRowQuery, Params: Helper.generateSQLParameters(currRow: row, isAdd: false));
+            if (row.id == null) result = db.ExecuteCommand(QuerySQL: Query.Row.Insert, Params: Helper.generateSQLParameters(currRow: row, isAdd: true));
+            if (row.id != null) result = db.ExecuteCommand(QuerySQL: Query.Row.Update, Params: Helper.generateSQLParameters(currRow: row, isAdd: false));
             
             if (result == -1)
             {

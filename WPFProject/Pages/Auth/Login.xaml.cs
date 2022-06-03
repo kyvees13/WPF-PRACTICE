@@ -37,11 +37,13 @@ namespace WPFProject.Pages.Auth
             }
 
             string login = LoginBox.Text.Trim();
-            string hashpass = Database.HashingPass(login, PassBox.Password.Trim());
+            string hashpass = Cryptography.HashingPass(login, PassBox.Password.Trim());
 
             var table = db.GetFilledTable(
-                QuerySQL: "select * from usersAcc where login=@login and password=@password",
-                Params: new List<SQLiteParameter> { new SQLiteParameter("@login", login), new SQLiteParameter("@password", hashpass) });
+                QuerySQL: Query.Select.Account, Params: 
+                new List<SQLiteParameter> { 
+                    new SQLiteParameter("@login", login), 
+                    new SQLiteParameter("@password", hashpass) });
 
             if (table.Rows.Count > 0)
             {

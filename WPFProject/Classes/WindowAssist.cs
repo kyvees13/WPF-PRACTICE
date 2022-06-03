@@ -9,7 +9,7 @@ using System.Windows.Media;
 
 namespace WPFProject.Classes
 {
-    internal class WindowAssist
+    static class WindowAssist
     {
         private static IEnumerable<T> FindVisualChilds<T>(DependencyObject depObj) where T : DependencyObject
         {
@@ -29,7 +29,7 @@ namespace WPFProject.Classes
             foreach (TextBox textbox in WindowAssist.FindVisualChilds<TextBox>(depObj))
             {
                 if (!textbox.Text.Any())
-                {   //textbox.Background = Brushes.Transparent;
+                {   
                     q = false; break;
                 }
             }
@@ -42,7 +42,7 @@ namespace WPFProject.Classes
             foreach (ComboBox combobox in WindowAssist.FindVisualChilds<ComboBox>(depObj))
             {
                 if (!combobox.Text.Any())
-                {   //combobox.Background = Brushes.Transparent;
+                {   
                     q = false; break;
                 }
             }
