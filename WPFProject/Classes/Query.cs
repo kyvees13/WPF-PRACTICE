@@ -3,121 +3,242 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SQLite;
+using WPFProject;
+using static WPFProject.Classes.Helper;
 
-namespace WPFProject.Classes
+namespace WPFProject.Queries
 {
-    static class Query
+
+    public class Table
+    {
+        public string TableName { get; set; }
+    }
+
+    public class Search
+    {
+        private string SearchTag { get; set; }
+        private string SearchText { get; set; }
+
+        public Search(string SearchTag, string SearchText) { this.SearchTag = SearchTag; this.SearchText = SearchText; }
+
+        private string GetString
+        {
+            get => $"SELECT * FROM investTable WHERE {this.SearchTag} LIKE @SearchText";
+        }
+
+        private List<SQLiteParameter> GetParameters
+        {
+            get => new List<SQLiteParameter> { new SQLiteParameter("@SearchText", this.SearchText) };
+        }
+
+        private int Execute { get => this.ExecuteCommand(); }
+
+
+    }
+
+    public class Table
+    {
+        protected List<SQLiteParameter> parameters { get; set; }
+    }
+
+    public class Account
+    {
+        protected string Username { get; set; }
+        protected string Password { get; set; }
+
+        protected List<SQLiteParameter> parameters;
+
+        protected Account(string Username)
+        {
+            this.Username = Username;
+        }
+        protected Account(string Username, string Password)
+        {
+            this.Username = Username;
+            this.Password = Password;
+        }
+    }
+
+    public class Invest
+    {
+        protected RowData row { get; set; }
+
+        protected List<SQLiteParameter> parameters;
+    }
+    
+    public class Search : Account
+    {
+        public Search(string Username) : base(Username: Username)
+        {
+            parameters.Add(new SQLiteParameter("@login", Username));
+        }
+
+        public string GetString { get => Queries.Constants.Users.Search; }
+        public List<SQLiteParameter> GetParameters { get => this.parameters; }
+
+        public RequestStatement Execute { get => RequestStatement.Success; }
+            
+    }
+    public class Authorize : Account
+    {
+        public Authorize(string Username, string Password) : base(Username, Password)
+        {
+            parameters.Add(new SQLiteParameter("@login", Username));
+            parameters.Add(new SQLiteParameter("@password", Password));
+        }
+
+        public string GetString { get => Queries.Constants.Users.Authorize; }
+        public List<SQLiteParameter> GetParameters { get => this.parameters; }
+
+        public RequestStatement Execute { get => RequestStatement.Success; }
+
+    }
+
+    public static class Constants
     {
 
-        public class Search
-        {
-            private string SearchTag;
-            public Search(string SearchTag) { this.SearchTag = SearchTag; }
 
-            public string GetString { get => $"SELECT * FROM investTable WHERE {this.SearchTag} LIKE @content"; }
+        public static class Users 
+        {
+            public const string Authorize = "select * from usersAcc where login=@login and password=@password";
+            public const string Add = "insert into usersAcc(login,password) VALUES(@login,@password)";
+            public const string Recover = "";
         }
-
-        public class Delete
+        public static class Invest
         {
-            string DeleteTag;
-            public Delete(string DeleteTag) { this.DeleteTag = DeleteTag; }
-
-            public string GetString { get => $"DELETE FROM investTable WHERE {this.DeleteTag} = @content"; }
+            public const string Search = "SELECT * FROM investTable WHERE {this.SearchTag} LIKE @SearchText";
+            public const string Recover = "";
         }
+    }
 
-        public class Update
+
+    public class Qwe
+    {
+
+        public RequestStatement SelectorStatement(int result)
         {
-            public const string Row =
-                "UPDATE investTable SET " +
-                    "name_of=@name_of," +
-                    "organization=@organization," +
-                    "district=@district," +
-                    "review=@review," +
-                    "category=@category," +
-                    "cashflow_category=@cashflow_category," +
-                    "originality=@originality," +
-                    "social_profit=@social_profit," +
-                    "taxes=@taxes," +
-                    "num_workers=@num_workers," +
-                    "paid_salary=@paid_salary," +
-                    "realize_period=@realize_period," +
-                    "rating=@rating " +
-                "WHERE id=@id ";
-        }
-
-        public class Insert
-        {
-            public const string Row = 
-                "INSERT INTO investTable(" +
-                    "name_of," +
-                    "organization," +
-                    "district," +
-                    "review," +
-                    "category," +
-                    "cashflow_category," +
-                    "originality," +
-                    "social_profit," +
-                    "taxes," +
-                    "num_workers," +
-                    "paid_salary," +
-                    "realize_period," +
-                    "rating) " +
-                "VALUES(" +
-                    "@name_of," +
-                    "@organization," +
-                    "@district," +
-                    "@review," +
-                    "@category," +
-                    "@cashflow_category," +
-                    "@originality," +
-                    "@social_profit," +
-                    "@taxes," +
-                    "@num_workers," +
-                    "@paid_salary," +
-                    "@realize_period," +
-                    "@rating) ";
-
-            public const string User = 
-        }
-
-        public class Create
-        {
-
-            public class Table
+            switch (result)
             {
-                public const string Users =
-                    "CREATE TABLE IF NOT EXISTS usersAcc (" +
-                            "id INTEGER NOT NULL UNIQUE," +
-                            "login TEXT NOT NULL," +
-                            "password  TEXT NOT NULL," +
-                            "PRIMARY KEY(id AUTOINCREMENT))";
-                public const string InvestTable =
-                    "CREATE TABLE IF NOT EXISTS investTable (" +
-                            "id INTEGER NOT NULL UNIQUE," +
-                            "name_of TEXT NOT NULL," +
-                            "organization  TEXT NOT NULL," +
-                            "district  TEXT NOT NULL," +
-                            "review TEXT NOT NULL," +
-                            "category TEXT NOT NULL," +
-                            "cashflow_category TEXT NOT NULL," +
-                            "originality TEXT NOT NULL," +
-                            "social_profit TEXT NOT NULL," +
-                            "taxes TEXT NOT NULL," +
-                            "num_workers TEXT NOT NULL," +
-                            "paid_salary TEXT NOT NULL," +
-                            "realize_period TEXT NOT NULL," +
-                            "rating TEXT NOT NULL," +
-                        "PRIMARY KEY(id AUTOINCREMENT));";
+                case 1: return RequestStatement.Success;
+                case 0: return RequestStatement.Warning;
+                case -1: return RequestStatement.Error;
+
+                default: return RequestStatement.Unexpected;
             }
         }
 
-        public class Select
+        public class Users
         {
-            public const string AllMainTable = "select * from investTable";
+            public class Auth
+            {
+                string login, password;
 
-            public const string Login = "select * from usersAcc where login=@login";
-            public const string Account = "select * from usersAcc where login=@login and password=@password";
+                public Auth(string login, string password) { this.login = login; this.password = password; }
+
+                public RequestStatement Execute { get => RequestStatement.Success; }
+
+                public string GetString { get => Queries.Constants.Users.Authorize; }
+                public List<SQLiteParameter> GetParameters { get => new List<SQLiteParameter>
+                    {
+                        new SQLiteParameter("@login", this.login),
+                        new SQLiteParameter("@password", this.password)
+                    };
+                }
+            }
+
+            public class Add
+            {
+                string login, password;
+
+                public Add(string login, string password)
+                {
+                    this.login = login;
+                    this.password = password;
+                }
+
+                public string GetString { get => Queries.Constants.Users.Add; }
+                public List<SQLiteParameter> GetParameters
+                {
+                    get => new List<SQLiteParameter>
+                    {
+                        new SQLiteParameter("@login", this.login),
+                        new SQLiteParameter("@password", this.password)
+                    };
+                }
+                public int Execute { get => ExecuteCommand(GetString, GetParameters); }
+            }
+
         }
 
+        public class Table
+        {
+            public string TableName { get; set; }
+
+            public class Search : Table
+            {
+                private string SearchTag { get; set; }
+                private string SearchText{ get; set; }
+
+                public Search(string SearchTag, string SearchText) { this.SearchTag = SearchTag; this.SearchText = SearchText; }
+
+                private string GetString {
+                    get => $"SELECT * FROM {this.TableName} WHERE {this.SearchTag} LIKE @SearchText"; }
+
+                private List<SQLiteParameter> GetParameters {
+                    get => new List<SQLiteParameter> { new SQLiteParameter("@SearchText", this.SearchText) }; }
+
+                private int Execute { get => this.ExecuteCommand(); }
+
+
+            }
+
+            public class Delete
+            {
+                private string DeleteTag, DeleteText;
+
+                public Delete(string DeleteTag, string DeleteText) { this.DeleteTag = DeleteTag; this.DeleteText = DeleteText; }
+
+                public string GetString {
+                    get => $"DELETE FROM investTable WHERE {this.DeleteTag} = @DeleteText"; }
+
+                public List<SQLiteParameter> GetParameters {
+                    get => new List<SQLiteParameter> { new SQLiteParameter("@DeleteText", this.DeleteText) }; }
+            }
+
+            public class Add
+            {
+                private string DeleteTag, DeleteText;
+
+                public Add(string DeleteTag, string DeleteText) { this.DeleteTag = DeleteTag; this.DeleteText = DeleteText; }
+
+                public string GetString
+                {
+                    get => $"DELETE FROM investTable WHERE {this.DeleteTag} = @DeleteText";
+                }
+
+                public List<SQLiteParameter> GetParameters
+                {
+                    get => new List<SQLiteParameter> { new SQLiteParameter("@DeleteText", this.DeleteText) };
+                }
+            }
+
+            public class Edit
+            {
+                private Helper.RowData row;
+
+                public Edit(Helper.RowData row) { this.row = row; }
+
+                public string GetString
+                {
+                    get => $"DELETE FROM investTable WHERE {this.DeleteTag} = @DeleteText";
+                }
+
+                public List<SQLiteParameter> GetParameters
+                {
+                    get => new List<SQLiteParameter> { new SQLiteParameter("@DeleteText", this.DeleteText) };
+                }
+            }
+        }
     }
 }

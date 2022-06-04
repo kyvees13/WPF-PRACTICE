@@ -39,11 +39,40 @@ namespace WPFProject.Pages.Auth
             string login = LoginBox.Text.Trim();
             string hashpass = Cryptography.HashingPass(login, PassBox.Password.Trim());
 
-            var table = db.GetFilledTable(
-                QuerySQL: Query.Select.Account, Params: 
-                new List<SQLiteParameter> { 
-                    new SQLiteParameter("@login", login), 
-                    new SQLiteParameter("@password", hashpass) });
+            var query = new Queries(db_path: "wpfproject.db");
+
+            Queries QuerySQL = new QuerySQL.Users.Add();
+
+            var search = new Queries.Qwe.Table.Search(login, hashpass);
+            search.TableName = "investTable";
+
+
+            var QueryResult = QuerySQL.Result;
+
+            if (QueryResult is RequestStatement.Success)
+            {
+
+            } else 
+
+            if (QueryResult is RequestStatement.Warning)
+            {
+
+            } else 
+            
+            if (QueryResult is RequestStatement.Error)
+            {
+
+            }
+            
+
+            var QueryAuth = new Queries.Users.Auth(login, hashpass);
+            int result = QueryAuth.Execute;
+            
+
+            var QuerySQL = new Query.Users.Add(login: login, password: hashpass);
+            DataTable result = QuerySQL.Exe();
+
+            var table = db.GetFilledTable(QuerySQL: QuerySQL.GetString, Params: QuerySQL.GetParameters);
 
             if (table.Rows.Count > 0)
             {

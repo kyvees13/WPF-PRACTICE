@@ -11,53 +11,67 @@ using WPFProject.Classes;
 
 namespace WPFProject
 {
+    public enum RequestStatement
+    {
+        Success=1,
+        Error=-1,
+        Warning=0,
+        Unexpected
+    }
+
     public class Database
     {
 
-        private readonly string _rootFolder = Path.GetDirectoryName(
+        protected readonly string _rootFolder = Path.GetDirectoryName(
             System.AppDomain.CurrentDomain.BaseDirectory);
 
-        private SQLiteDataAdapter SQLiteAdapter;
-        private SQLiteConnection conn;
-        private SQLiteCommand cmd;
-        private DataTable Table;
+        protected SQLiteDataAdapter SQLiteAdapter;
+        protected SQLiteConnection conn;
+        protected SQLiteCommand cmd;
+        protected DataTable Table;
 
-        private string db_path;
+        protected string db_path;
 
-        public string DatabasePath { get => _rootFolder + this.db_path; }
-        private string ConnectionString { get => $"Data Source={this.DatabasePath}; Version=3;"; }
+        protected string GetDatabasePath { get => _rootFolder + this.db_path; }
+        protected string GetConnectionString { get => $"Data Source={this.GetDatabasePath}; Version=3;"; }
 
         public Database(string db_path)
         {
             this.db_path = db_path;
             this.Recover();
         }
-        private void Recover()
+        protected void Recover()
         {
-            if (!File.Exists(this.DatabasePath)) SQLiteConnection.CreateFile(this.DatabasePath);
-            this.ExecuteCommand(QuerySQL: Query.Create.UsersTable, Params: new List<SQLiteParameter>());
-            this.ExecuteCommand(QuerySQL: Query.Create.InvestTable, Params: new List<SQLiteParameter>());
+            if (!File.Exists(this.GetDatabasePath)) SQLiteConnection.CreateFile(this.GetDatabasePath);
+            this.ExecuteCommand(QuerySQL: Queries., Params: new List<SQLiteParameter>());
+            this.ExecuteCommand(QuerySQL: Queries.Invest.CreateTable, Params: new List<SQLiteParameter>());
         }
-        private SQLiteCommand LoadCommandWithParameters(SQLiteCommand cmd, List<SQLiteParameter> Params)
+        private SQLiteCommand LoadParameters(SQLiteCommand cmd, List<SQLiteParameter> Params)
         {
             foreach (SQLiteParameter param in Params) cmd.Parameters.Add(param);
             return cmd;
         }
+        private SQLiteCommand GenerateSQLiteCommand(string QuerySQL)
+        {
+            return new SQLiteCommand(QuerySQL);
+        }
+        private SQLiteCommand GenerateSQLiteCommand(string QuerySQL, List<SQLiteParameter> Params)
+        {
+            return LoadParameters(GenerateSQLiteCommand(QuerySQL), Params);
+        }
 
         public int ExecuteCommand(string QuerySQL, List<SQLiteParameter> Params)
         {
-            int result = 0;
+            int result = -1;
             try
             {
-                conn = new SQLiteConnection(this.ConnectionString);
-                conn.Open();
-                cmd = conn.CreateCommand();
-                cmd.CommandText = QuerySQL;
-                cmd = this.LoadCommandWithParameters(cmd, Params);
-
-                result = cmd.ExecuteNonQuery();
+                using (SQLiteConnection conn = new SQLiteConnection(GetConnectionString))
+                {
+                    conn.Open(); 
+                    result = GenerateSQLiteCommand(QuerySQL, Params).ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
+            catch
             {
                 result = -1;
             }
@@ -65,38 +79,29 @@ namespace WPFProject
             {
                 conn.Close();
             }
-
             return result;
         }
 
         public DataTable GetFilledTable(string QuerySQL, List<SQLiteParameter> Params)
         {
-            SQLiteAdapter = new SQLiteDataAdapter();
-            Table = new DataTable();
-
+            SQLiteAdapter = new SQLiteDataAdapter(); Table = new DataTable();
             try
             {
-                conn = new SQLiteConnection(this.ConnectionString);
-                conn.Open();
+                using (SQLiteConnection conn = new SQLiteConnection(GetConnectionString))
+                {
+                    conn.Open();
 
-                cmd = conn.CreateCommand();
-                cmd.CommandText = QuerySQL;
-
-                SQLiteAdapter.SelectCommand = LoadCommandWithParameters(cmd, Params);
-                SQLiteAdapter.Fill(Table);
-
-                return Table;
+                    SQLiteAdapter.SelectCommand = GenerateSQLiteCommand(QuerySQL, Params);
+                    SQLiteAdapter.Fill(Table);
+                }
             }
             catch
             {
-
             }
             finally
             {
                 conn.Close();
             }
-
-
             return Table;
         }
     }
