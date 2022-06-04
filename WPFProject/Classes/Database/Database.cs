@@ -9,7 +9,7 @@ using System.IO;
 using System.Security.Cryptography;
 using WPFProject.Classes;
 
-namespace WPFProject
+namespace WPFProject.Classes.Database
 {
     public class Database
     {
@@ -51,7 +51,32 @@ namespace WPFProject
         {
             return LoadParameters(GenerateSQLiteCommand(QuerySQL), Params);
         }
+        public static List<SQLiteParameter> GenerateRowSQLParameters(Row currRow, bool isAdd)
+        {
+            List<SQLiteParameter> parameters = new List<SQLiteParameter>
+            {
+                new SQLiteParameter("@name_of", currRow.name_of.ToString()),
+                new SQLiteParameter("@organization", currRow.organization.ToString()),
+                new SQLiteParameter("@district", currRow.district.ToString()),
+                new SQLiteParameter("@review", currRow.review.ToString()),
 
+                new SQLiteParameter("@category", currRow.category.Key.ToString()), //
+                new SQLiteParameter("@cashflow_category", currRow.cashflow_category.Key.ToString()), //
+                new SQLiteParameter("@originality", currRow.originality.Key.ToString()), //
+                new SQLiteParameter("@social_profit", currRow.social_profit.Key.ToString()), //
+
+                new SQLiteParameter("@taxes", currRow.taxes.ToString()),
+                new SQLiteParameter("@num_workers", currRow.num_workers.ToString()),
+                new SQLiteParameter("@paid_salary", currRow.paid_salary.ToString()),
+                new SQLiteParameter("@realize_period", currRow.realize_period.ToString()),
+
+                new SQLiteParameter("@rating", CalculateRating(currRow).ToString())
+            };
+
+            if (!isAdd) parameters.Add(new SQLiteParameter("@id", currRow.id.ToString()));
+
+            return parameters;
+        }
         public int ExecuteCommand(string QuerySQL, List<SQLiteParameter> Params)
         {
             int result = -1;

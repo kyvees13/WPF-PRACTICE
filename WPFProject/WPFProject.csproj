@@ -113,7 +113,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Pages\DatabaseWindow.xaml">
+    <Page Include="Pages\Main\MainVieewr.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -121,10 +121,12 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Classes\Comboboxes\ComboboxFinder.cs" />
+    <Compile Include="Classes\Comboboxes\ComboboxPairs.cs" />
     <Compile Include="Classes\Queries\Constants.cs" />
     <Compile Include="Classes\Cryptography.cs" />
-    <Compile Include="Classes\Helper.cs" />
-    <Compile Include="Classes\Database.cs" />
+    <Compile Include="Classes\Database\Row.cs" />
+    <Compile Include="Classes\Database\Database.cs" />
     <Compile Include="Classes\Queries\Account.cs" />
     <Compile Include="Classes\Queries\Invest.cs" />
     <Compile Include="Classes\Queries\Table.cs" />
@@ -135,18 +137,18 @@
     <Compile Include="Pages\Auth\Register.xaml.cs">
       <DependentUpon>Register.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pages\DatabaseWindow.xaml.cs">
-      <DependentUpon>DatabaseWindow.xaml</DependentUpon>
+    <Compile Include="Pages\Main\MainVieewr.xaml.cs">
+      <DependentUpon>MainVieewr.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Pages\DataPage.xaml">
+    <Page Include="Pages\Main\AdditionalForm.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Pages\DataPage.xaml.cs">
-      <DependentUpon>DataPage.xaml</DependentUpon>
+    <Compile Include="Pages\Main\AdditionalForm.xaml.cs">
+      <DependentUpon>AdditionalForm.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
