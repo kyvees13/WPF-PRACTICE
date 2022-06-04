@@ -123,7 +123,7 @@ namespace WPFProject.Classes
             }
         }
 
-        public static List<SQLiteParameter> generateSQLParameters(RowData currRow, bool isAdd)
+        public static List<SQLiteParameter> GenerateRowSQLParameters(RowData currRow, bool isAdd)
         {
             List<SQLiteParameter> parameters = new List<SQLiteParameter>
             {

@@ -11,14 +11,6 @@ using WPFProject.Classes;
 
 namespace WPFProject
 {
-    public enum RequestStatement
-    {
-        Success=1,
-        Error=-1,
-        Warning=0,
-        Unexpected
-    }
-
     public class Database
     {
 
@@ -30,9 +22,9 @@ namespace WPFProject
         protected SQLiteCommand cmd;
         protected DataTable Table;
 
-        protected string db_path;
+        private string db_path;
 
-        protected string GetDatabasePath { get => _rootFolder + this.db_path; }
+        protected string GetDatabasePath { get => _rootFolder + this.db_path; set => db_path = _rootFolder + value; }
         protected string GetConnectionString { get => $"Data Source={this.GetDatabasePath}; Version=3;"; }
 
         public Database(string db_path)
@@ -43,8 +35,8 @@ namespace WPFProject
         protected void Recover()
         {
             if (!File.Exists(this.GetDatabasePath)) SQLiteConnection.CreateFile(this.GetDatabasePath);
-            this.ExecuteCommand(QuerySQL: Queries., Params: new List<SQLiteParameter>());
-            this.ExecuteCommand(QuerySQL: Queries.Invest.CreateTable, Params: new List<SQLiteParameter>());
+            this.ExecuteCommand(QuerySQL: Queries.Constants.Users.Recover, Params: new List<SQLiteParameter>());
+            this.ExecuteCommand(QuerySQL: Queries.Constants.Invest.Recover, Params: new List<SQLiteParameter>());
         }
         private SQLiteCommand LoadParameters(SQLiteCommand cmd, List<SQLiteParameter> Params)
         {
