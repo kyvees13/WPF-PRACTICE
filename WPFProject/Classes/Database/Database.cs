@@ -46,8 +46,8 @@ namespace WPFProject.Classes.Data
             this.ExecuteCommand(QuerySQL: Queries.Constants.Invest.Recover, Params: new List<SQLiteParameter>(), false);
         }
 
-        private long ExecuteSelect(SQLiteCommand cmd) => (long)cmd.ExecuteScalar();
-        private long ExecuteChanger(SQLiteCommand cmd) => (long)cmd.ExecuteNonQuery();
+        private long ExecuteSelect(SQLiteCommand cmd) => (long) cmd.ExecuteScalar();
+        private long ExecuteChanger(SQLiteCommand cmd) => (long) cmd.ExecuteNonQuery();
 
         private SQLiteCommand LoadParameters(SQLiteCommand cmd, List<SQLiteParameter> Params)
         {
@@ -69,11 +69,10 @@ namespace WPFProject.Classes.Data
             using (cmd = GenerateSQLiteCommand(QuerySQL, Params))
             {
                 cmd.Connection = GetConnection; cmd.Connection.Open();
-                result = isSelect ? ExecuteSelect(cmd) : ExecuteChanger(cmd);
 
-                /*try { result = isSelect ? (int)ExecuteSelect(cmd) : (int)ExecuteChanger(cmd); }
+                try { result = isSelect ? ExecuteSelect(cmd) : ExecuteChanger(cmd); }
                 catch { result = -1; }
-                finally { cmd.Connection.Close(); }*/
+                finally { cmd.Connection.Close(); }
             }
             return result;
         }
@@ -82,10 +81,15 @@ namespace WPFProject.Classes.Data
             Table = new DataTable();
             using (SQLiteAdapter = new SQLiteDataAdapter())
             {
-                SQLiteAdapter.SelectCommand = GenerateSQLiteCommand(QuerySQL, Params);
-                SQLiteAdapter.SelectCommand.Connection = GetConnection;
-                SQLiteAdapter.SelectCommand.Connection.Open();
-                SQLiteAdapter.Fill(Table);
+                try
+                {
+                    SQLiteAdapter.SelectCommand = GenerateSQLiteCommand(QuerySQL, Params);
+                    SQLiteAdapter.SelectCommand.Connection = GetConnection;
+                    SQLiteAdapter.SelectCommand.Connection.Open();
+                    SQLiteAdapter.Fill(Table);
+                }
+                catch { }
+                finally { SQLiteAdapter.SelectCommand.Connection.Close(); }
             }
             return Table;
         }

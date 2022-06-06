@@ -22,6 +22,14 @@ namespace WPFProject.Pages.Auth
 {
     public partial class Login : Window
     {
+
+        private RequestStatement ExecutedStatement;
+
+        private string GetLogin { get => LoginBox.Text.Trim(); }
+        private string GetPass { get => PassBox.Password.Trim(); }
+
+        private string GetHashedPass { get => Cryptography.HashingPass(GetLogin, GetPass); }
+
         public Login()
         {
             InitializeComponent();
@@ -35,15 +43,10 @@ namespace WPFProject.Pages.Auth
                 return;
             }
 
-            string login = LoginBox.Text.Trim();
-            string hashpass = Cryptography.HashingPass(login, PassBox.Password.Trim());
+            // Searching exist credentials of account in database
+            ExecutedStatement = new Account.Authorize(GetLogin, GetHashedPass).ExecuteWithStatement();
 
-            Account.Authorize authQuery = new Account.Authorize(login, hashpass);
-            long ExecutedNumber = authQuery.Execute();
-
-            MessageBox.Show(ExecutedNumber.ToString());
-
-            if (ExecutedNumber > 0)
+            if (ExecutedStatement is RequestStatement.POSITIVE)
             {
                 MainViewer main = new MainViewer();
                 main.Owner = this;
@@ -51,20 +54,19 @@ namespace WPFProject.Pages.Auth
                 main.Show();
                 this.Hide();
             }
-            else if (ExecutedNumber == 0)
+            else if (ExecutedStatement is RequestStatement.NULL)
             {
-                LoginBox.Text = "";
-                PassBox.Password = "";
-
-                LoginBox.Background = Brushes.DarkRed;
-                PassBox.Background = Brushes.DarkRed;
-
+                this.ClearFields();
                 MessageBox.Show("Логин или пароль введены неверно!", "Ошибка аутентификации", MessageBoxButton.OK, MessageBoxImage.Error);
             } 
-            else if (ExecutedNumber == -1)
+            else if (ExecutedStatement is RequestStatement.ERROR)
             {
-                MessageBox.Show("Непредвиденная ошибка базы данных!", "Ошибка БД", MessageBoxButton.OK, MessageBoxImage.Error);
-            };
+                MessageBox.Show("Ошибка запроса!", "Ошибка базы данных", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else if (ExecutedStatement is RequestStatement.UNEXPECTED)
+            {
+                MessageBox.Show("Непредвиденная ошибка!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ClickToRegister(object sender, RoutedEventArgs e)
@@ -75,6 +77,7 @@ namespace WPFProject.Pages.Auth
             this.Hide();
             regWindow.Show();
         }
+
         private void TextChangedEvent(object sender, RoutedEventArgs e)
         {
             LoginBox.Background = Brushes.White;
@@ -84,6 +87,15 @@ namespace WPFProject.Pages.Auth
         {
             Regex regex = new Regex(@"[^a-zA-Z0-9\s]");
             e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void ClearFields()
+        {
+            LoginBox.Text = "";
+            PassBox.Password = "";
+
+            LoginBox.Background = Brushes.DarkRed;
+            PassBox.Background = Brushes.DarkRed;
         }
     }
 }

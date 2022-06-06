@@ -15,32 +15,19 @@ namespace WPFProject.Classes.Queries
     {
         protected Row row { get; set; }
 
-        string id;
+        private string id;
 
-        string _searchtag;
-        string _searchtext;
+        private string _searchtag;
+        private string _searchtext;
 
         protected string ID {  get => id; set => id = value; }
         protected string SearchTag { get => _searchtag; set => _searchtag = value; }
         protected string SearchText { get => _searchtext; set => _searchtext = value; }
 
-        protected Invest() 
-        { 
-
-        }
-        protected Invest(string ID)
-        {
-            this.ID = id;
-        }
-        protected Invest(Row row)
-        {
-            this.row = row;
-        }
-        protected Invest(string SearchTag, string SearchText)
-        {
-            this.SearchTag = SearchTag;
-            this.SearchText = SearchText;
-        }
+        protected Invest() { }
+        protected Invest(string ID) { this.ID = id; }
+        protected Invest(Row row) { this.row = row; }
+        protected Invest(string SearchTag, string SearchText) { this.SearchTag = SearchTag; this.SearchText = SearchText; }
 
         public class Add : Invest
         {
@@ -59,7 +46,6 @@ namespace WPFProject.Classes.Queries
                 parameters = Database.GenerateRowSQLParameters(row, isAdd: false);
                 this.isSelect = false;
             }
-
         }
         public class Delete : Invest
         {

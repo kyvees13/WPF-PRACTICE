@@ -8,10 +8,10 @@ namespace WPFProject.Classes.Queries
 {
     public enum RequestStatement
     {
-        Unexpected = -2,
-        Error = -1,
-        Warning = 0,
-        Success = 1
+        POSITIVE = 1,
+        NULL = 0,
+        ERROR = -1,
+        UNEXPECTED = -2
     }
 
     public static class Constants

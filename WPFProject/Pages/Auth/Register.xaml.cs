@@ -23,11 +23,23 @@ namespace WPFProject.Pages.Auth
 {
     public partial class Register : Window
     {
-        int result;
+
+        private RequestStatement ExecuteStatement;
+
+        private string GetLogin { get => LoginBox.Text.Trim(); }
+        private string GetPass { get => PassBox.Password.Trim(); }
+        private string GetRePass { get => RePassBox.Password.Trim(); }
+        private string GetHashedPass { get => Cryptography.HashingPass(GetLogin, GetPass); }
+
 
         public Register()
         {
             InitializeComponent();
+        }
+
+        private void CheckAccount(RequestStatement state)
+        {
+
         }
 
         private void ButtonRegister(object sender, RoutedEventArgs e)
@@ -37,67 +49,66 @@ namespace WPFProject.Pages.Auth
                 MessageBox.Show("Поля введены неверно!", "Ошибка ввода!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            if (PassBox.Password.Trim() != RePassBox.Password.Trim())
+            if (GetPass != GetRePass)
             {
                 MessageBox.Show("Пароли не равны!", "Ошибка ввода!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            string login = LoginBox.Text.Trim();
-            string hashpass = Cryptography.HashingPass(login, PassBox.Password.Trim());
+            ExecuteStatement = new Account.Search(Username: GetLogin).ExecuteWithStatement();
 
-            long result = new Account.Search(login).Execute();
-
-            if (result == 1)
+            if (ExecuteStatement is RequestStatement.POSITIVE)
             {
                 MessageBox.Show("Аккаунт уже существует!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            else if (result == 0)
+            else if (ExecuteStatement is RequestStatement.ERROR)
             {
-                long result2 = new Account.Register(login, hashpass).Execute();
+                MessageBox.Show("Ошибка запроса к базе данных!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            else if (ExecuteStatement is RequestStatement.UNEXPECTED)
+            {
+                MessageBox.Show("Непредвиденная ошибка!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            else if (ExecuteStatement is RequestStatement.NULL)
+            {
+                MessageBox.Show("Аккаунт не был найден и сейчас попытаемся его зарегистрировать!", "Круто!");
+                
+                ExecuteStatement = new Account.Register(
+                    Username: GetLogin, 
+                    Password: GetHashedPass)
+                    .ExecuteWithStatement();
 
-                if (result2 == 1)
+                if (ExecuteStatement is RequestStatement.POSITIVE)
                 {
-                    MessageBox.Show("Регистрация пройдена успешно!", "Ура!", MessageBoxButton.OK);
+                    MessageBox.Show(
+                        "Регистрация пройдена успешно!", 
+                        "Ура!", 
+                        MessageBoxButton.OK);
+
                     this.Owner.Show();
                     this.Hide();
                     return;
                 }
+                else if (ExecuteStatement is RequestStatement.NULL)
+                {
+                    MessageBox.Show("Не удалось добавить аккаунт!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                else if (ExecuteStatement is RequestStatement.ERROR)
+                {
+                    MessageBox.Show("Непредвиденная ошибка", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                else if (ExecuteStatement is RequestStatement.UNEXPECTED)
+                {
+                    MessageBox.Show("esfsefsefsefse");
+                }
+                MessageBox.Show("111");
             }
 
-            /*switch (new Account.Search(Username: login).ExecuteWithStatement())
-            {
-                case RequestStatement.Success:
-                    {
-                        MessageBox.Show("Аккаунт уже существует!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-                case RequestStatement.Warning:
-                    {
-                        switch (new Account.Register(login, hashpass).ExecuteWithStatement())
-                        {
-                            case RequestStatement.Success:
-                                {
-                                    MessageBox.Show("Регистрация пройдена успешно!", "Ура!", MessageBoxButton.OK);
-                                    this.Owner.Show();
-                                    this.Hide();
-                                    return;
-                                }
-                            case RequestStatement.Warning:
-                                {
-                                    MessageBox.Show("Аккаунт не был зарегистрирован!", "Ошибка регистрации!", MessageBoxButton.OK, MessageBoxImage.Error);
-                                    return;
-                                }
-                            case RequestStatement.Error:
-                                {
-                                    MessageBox.Show("Непредвиденная ошибка запроса!", "Ошибка запроса", MessageBoxButton.OK, MessageBoxImage.Error);
-                                    return;
-                                }
-                        }
-                        break;
-                    }
-            }*/
         }
         private void TextChangedEvent(object sender, RoutedEventArgs e)
         {
