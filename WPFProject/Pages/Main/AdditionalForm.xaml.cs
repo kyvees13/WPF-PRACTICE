@@ -12,38 +12,44 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+
 using WPFProject.Classes;
+using WPFProject.Classes.Data;
+using WPFProject.Classes.Comboboxes;
 
 using System.Data.SQLite;
 using System.Text.RegularExpressions;
+using WPFProject.Classes.Queries;
 
 namespace WPFProject.Pages
 {
-    public partial class DataPage : Window
+    public partial class AdditionalForm : Window
     {
+        public Row row;
 
-        int result;
-
-        public Database db = new Database(db_path: "wpfproject.db");
-        public Helper.RowData row;
-
-        public DataPage()
+        public AdditionalForm()
         {
-            InitializeComponent(); row = new Helper.RowData();
+
+            InitializeComponent();
+
             this.Title = "Добавление новой записи ";
+            row = new Row();
         }
-        public DataPage(DataRowView currRow)
+        public AdditionalForm(DataRowView currRow)
         {
-            InitializeComponent(); row = new Helper.RowData(currRow); 
+            InitializeComponent();
+
             this.Title = $"Изменение данных для записи | ID: {row.id}";
+            row = new Row(currRow); 
+            
         }
 
         private void LoadCombobox()
         {
-            ComboboxCategory.ItemsSource = Helper.ComboboxPairs.Category;
-            ComboboxCashFlow.ItemsSource = Helper.ComboboxPairs.CashFlow;
-            ComboboxOriginality.ItemsSource = Helper.ComboboxPairs.Originality;
-            ComboboxSocialProfit.ItemsSource = Helper.ComboboxPairs.SocialProfit;
+            ComboboxCategory.ItemsSource = ComboboxPairs.Category;
+            ComboboxCashFlow.ItemsSource = ComboboxPairs.CashFlow;
+            ComboboxOriginality.ItemsSource = ComboboxPairs.Originality;
+            ComboboxSocialProfit.ItemsSource = ComboboxPairs.SocialProfit;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -60,9 +66,11 @@ namespace WPFProject.Pages
                 MessageBox.Show("Не все поля введены!", "Уведомление", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
+
+            long result = -1;
             
-            if (row.id == null) result = db.ExecuteCommand(QuerySQL: Query.Row.Insert, Params: Helper.generateSQLParameters(currRow: row, isAdd: true));
-            if (row.id != null) result = db.ExecuteCommand(QuerySQL: Query.Row.Update, Params: Helper.generateSQLParameters(currRow: row, isAdd: false));
+            if (row.id == null) result = new Invest.Add(row: row).Execute();
+            if (row.id != null) result = new Invest.Edit(row: row).Execute();
             
             if (result == -1)
             {

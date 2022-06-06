@@ -30,24 +30,27 @@ namespace WPFProject.Classes.Queries
         {
             public Authorize(string Username, string Password) : base(Username, Password)
             {
-                Query = Queries.Constants.Users.Authorize;
-                parameters = new List<SQLiteParameter> { new SQLiteParameter("@login", Username), new SQLiteParameter("@password", Password) };
-            }
-        }
-        public class Search : Account
-        {
-            public Search(string Username) : base(Username)
-            {
-                Query = String.Format(format: Queries.Constants.Users.Search, arg0: Username);
-                parameters = new List<SQLiteParameter> { new SQLiteParameter("@login", Username) };
+                this.Query = Queries.Constants.Users.Authorize;
+                this.parameters = new List<SQLiteParameter> { new SQLiteParameter("@login", Username), new SQLiteParameter("@password", Password) };
+                this.isSelect = true;
             }
         }
         public class Register : Account
         {
             public Register(string Username, string Password) : base(Username, Password)
             {
-                Query = Queries.Constants.Users.Add;
-                parameters = new List<SQLiteParameter> { new SQLiteParameter("@login", Username), new SQLiteParameter("@password", Password) };
+                this.Query = Queries.Constants.Users.Add;
+                this.parameters = new List<SQLiteParameter> { new SQLiteParameter("@login", Username), new SQLiteParameter("@password", Password) };
+                this.isSelect = false;
+            }
+        }
+        public class Search : Account
+        {
+            public Search(string Username) : base(Username)
+            {
+                this.Query = String.Format(format: Queries.Constants.Users.Search, arg0: Username);
+                this.parameters = new List<SQLiteParameter> { new SQLiteParameter("@login", Username) };
+                this.isSelect = true;
             }
         }
     }

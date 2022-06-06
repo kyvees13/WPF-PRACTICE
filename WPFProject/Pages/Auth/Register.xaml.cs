@@ -14,15 +14,15 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+
 using WPFProject.Classes;
+using WPFProject.Classes.Helper;
+using WPFProject.Classes.Queries;
 
 namespace WPFProject.Pages.Auth
 {
     public partial class Register : Window
     {
-
-        public Database db = new Database(db_path: "wpfproject.db");
-
         int result;
 
         public Register()
@@ -44,46 +44,60 @@ namespace WPFProject.Pages.Auth
             }
 
             string login = LoginBox.Text.Trim();
-            string stringHashPass = Cryptography.HashingPass(login, PassBox.Password.Trim());
+            string hashpass = Cryptography.HashingPass(login, PassBox.Password.Trim());
 
-            var table = db.GetFilledTable(
-                QuerySQL: Query.Select.Login,
-                Params: new List<SQLiteParameter> { new SQLiteParameter("@login", login) });
+            long result = new Account.Search(login).Execute();
 
-
-            if (table.Rows.Count > 0)
+            if (result == 1)
             {
                 MessageBox.Show("Аккаунт уже существует!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            else if (table.Rows.Count == 0)
+            else if (result == 0)
             {
-                result = db.ExecuteCommand(
-                    QuerySQL: "insert into usersAcc (login,password) VALUES(@login,@password)",
-                    Params: new List<SQLiteParameter> {
-                    new SQLiteParameter("@login", login),
-                    new SQLiteParameter("@password", stringHashPass)
-                });
+                long result2 = new Account.Register(login, hashpass).Execute();
 
-                if (result == 1)
+                if (result2 == 1)
                 {
                     MessageBox.Show("Регистрация пройдена успешно!", "Ура!", MessageBoxButton.OK);
-                }
-                else if (result == 0)
-                {
-                    MessageBox.Show("Аккаунт не был зарегистрирован!", "Ошибка регистрации!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    this.Owner.Show();
+                    this.Hide();
                     return;
                 }
-                else if (result == -1)
-                {
-                    MessageBox.Show("Непредвиденная ошибка запроса!", "Ошибка запроса", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                this.Owner.Show();
-                this.Hide();
-
             }
+
+            /*switch (new Account.Search(Username: login).ExecuteWithStatement())
+            {
+                case RequestStatement.Success:
+                    {
+                        MessageBox.Show("Аккаунт уже существует!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                case RequestStatement.Warning:
+                    {
+                        switch (new Account.Register(login, hashpass).ExecuteWithStatement())
+                        {
+                            case RequestStatement.Success:
+                                {
+                                    MessageBox.Show("Регистрация пройдена успешно!", "Ура!", MessageBoxButton.OK);
+                                    this.Owner.Show();
+                                    this.Hide();
+                                    return;
+                                }
+                            case RequestStatement.Warning:
+                                {
+                                    MessageBox.Show("Аккаунт не был зарегистрирован!", "Ошибка регистрации!", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    return;
+                                }
+                            case RequestStatement.Error:
+                                {
+                                    MessageBox.Show("Непредвиденная ошибка запроса!", "Ошибка запроса", MessageBoxButton.OK, MessageBoxImage.Error);
+                                    return;
+                                }
+                        }
+                        break;
+                    }
+            }*/
         }
         private void TextChangedEvent(object sender, RoutedEventArgs e)
         {

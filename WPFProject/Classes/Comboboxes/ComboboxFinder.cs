@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace WPFProject.Classes.Comboboxes
 {
-    public class ComboboxFinder : ComboboxPairs
+    public class ComboboxFinder
     {
         private string comboboxKey;
 
@@ -18,9 +18,9 @@ namespace WPFProject.Classes.Comboboxes
             return new KeyValuePair<string, string>(null, null);
         }
 
-        public KeyValuePair<string, string> CategoryPair { get => FindValueByKey(pairs: Category); }
-        public KeyValuePair<string, string> CashFlowPair { get => FindValueByKey(pairs: CashFlow); }
-        public KeyValuePair<string, string> OriginalityPair { get => FindValueByKey(pairs: Originality); }
-        public KeyValuePair<string, string> SocialProfitPair { get => FindValueByKey(pairs: SocialProfit); }
+        public KeyValuePair<string, string> CategoryPair { get => FindValueByKey(pairs: ComboboxPairs.Category); }
+        public KeyValuePair<string, string> CashFlowPair { get => FindValueByKey(pairs: ComboboxPairs.CashFlow); }
+        public KeyValuePair<string, string> OriginalityPair { get => FindValueByKey(pairs: ComboboxPairs.Originality); }
+        public KeyValuePair<string, string> SocialProfitPair { get => FindValueByKey(pairs: ComboboxPairs.SocialProfit); }
     }
 }

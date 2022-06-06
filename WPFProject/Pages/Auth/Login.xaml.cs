@@ -15,14 +15,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using WPFProject.Classes;
+using WPFProject.Classes.Helper;
+using WPFProject.Classes.Queries;
 
 namespace WPFProject.Pages.Auth
 {
     public partial class Login : Window
     {
-
-        public Database db = new Database(db_path: "wpfproject.db");
-
         public Login()
         {
             InitializeComponent();
@@ -39,24 +38,20 @@ namespace WPFProject.Pages.Auth
             string login = LoginBox.Text.Trim();
             string hashpass = Cryptography.HashingPass(login, PassBox.Password.Trim());
 
-            Queries.Authorize QueryGen = new Queries.Authorize(login, hashpass);
+            Account.Authorize authQuery = new Account.Authorize(login, hashpass);
+            long ExecutedNumber = authQuery.Execute();
 
-            switch (QueryGen.Execute)
-            {
-                case RequestStatement.Success: return;
-                case RequestStatement.Warning: return;
-                case RequestStatement.Error: return;
-            }
+            MessageBox.Show(ExecutedNumber.ToString());
 
-            if (table.Rows.Count > 0)
+            if (ExecutedNumber > 0)
             {
-                DatabaseWindow main = new DatabaseWindow();
+                MainViewer main = new MainViewer();
                 main.Owner = this;
 
                 main.Show();
                 this.Hide();
             }
-            else if (table.Rows.Count == 0)
+            else if (ExecutedNumber == 0)
             {
                 LoginBox.Text = "";
                 PassBox.Password = "";
@@ -64,16 +59,17 @@ namespace WPFProject.Pages.Auth
                 LoginBox.Background = Brushes.DarkRed;
                 PassBox.Background = Brushes.DarkRed;
 
-                MessageBox.Show(
-                    "Логин или пароль введены неверно!", 
-                    "Ошибка аутентификации", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
+                MessageBox.Show("Логин или пароль введены неверно!", "Ошибка аутентификации", MessageBoxButton.OK, MessageBoxImage.Error);
+            } 
+            else if (ExecutedNumber == -1)
+            {
+                MessageBox.Show("Непредвиденная ошибка базы данных!", "Ошибка БД", MessageBoxButton.OK, MessageBoxImage.Error);
             };
         }
+
         private void ClickToRegister(object sender, RoutedEventArgs e)
         {
-            var regWindow = new Register();
+            Register regWindow = new Register();
             regWindow.Owner = this;
 
             this.Hide();

@@ -7,11 +7,12 @@ using System.Data.SQLite;
 using System.Data;
 using WPFProject.Classes.Comboboxes;
 
-namespace WPFProject.Classes.Database
+namespace WPFProject.Classes.Data
 {
     public class Row
     {
         public Row() { }
+        public Row(DataRowView row) { this.Fill(row); }
 
         public string id { get; set; } = null;
         public string name_of { get; set; } = null;

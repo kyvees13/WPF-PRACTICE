@@ -7,13 +7,16 @@ using System.Data.SQLite;
 using System.Data;
 using System.IO;
 using System.Security.Cryptography;
-using WPFProject.Classes;
 
-namespace WPFProject.Classes.Database
+using WPFProject.Classes;
+using WPFProject.Classes.Helper;
+
+namespace WPFProject.Classes.Data
 {
+    delegate int ExecuteTyper(SQLiteCommand cmd);
+
     public class Database
     {
-
         protected readonly string _rootFolder = Path.GetDirectoryName(
             System.AppDomain.CurrentDomain.BaseDirectory);
 
@@ -22,10 +25,14 @@ namespace WPFProject.Classes.Database
         protected SQLiteCommand cmd;
         protected DataTable Table;
 
+        private long result;
+
         private string db_path;
 
         protected string GetDatabasePath { get => _rootFolder + this.db_path; set => db_path = _rootFolder + value; }
         protected string GetConnectionString { get => $"Data Source={this.GetDatabasePath}; Version=3;"; }
+
+        protected SQLiteConnection GetConnection { get => new SQLiteConnection(GetConnectionString); }
 
         public Database(string db_path)
         {
@@ -35,9 +42,13 @@ namespace WPFProject.Classes.Database
         protected void Recover()
         {
             if (!File.Exists(this.GetDatabasePath)) SQLiteConnection.CreateFile(this.GetDatabasePath);
-            this.ExecuteCommand(QuerySQL: Queries.Constants.Users.Recover, Params: new List<SQLiteParameter>());
-            this.ExecuteCommand(QuerySQL: Queries.Constants.Invest.Recover, Params: new List<SQLiteParameter>());
+            this.ExecuteCommand(QuerySQL: Queries.Constants.Users.Recover, Params: new List<SQLiteParameter>(), false);
+            this.ExecuteCommand(QuerySQL: Queries.Constants.Invest.Recover, Params: new List<SQLiteParameter>(), false);
         }
+
+        private long ExecuteSelect(SQLiteCommand cmd) => (long)cmd.ExecuteScalar();
+        private long ExecuteChanger(SQLiteCommand cmd) => (long)cmd.ExecuteNonQuery();
+
         private SQLiteCommand LoadParameters(SQLiteCommand cmd, List<SQLiteParameter> Params)
         {
             foreach (SQLiteParameter param in Params) cmd.Parameters.Add(param);
@@ -51,6 +62,34 @@ namespace WPFProject.Classes.Database
         {
             return LoadParameters(GenerateSQLiteCommand(QuerySQL), Params);
         }
+
+        // using for (insert, update, delete); select statement returns -1;
+        public long ExecuteCommand(string QuerySQL, List<SQLiteParameter> Params, bool isSelect)
+        {
+            using (cmd = GenerateSQLiteCommand(QuerySQL, Params))
+            {
+                cmd.Connection = GetConnection; cmd.Connection.Open();
+                result = isSelect ? ExecuteSelect(cmd) : ExecuteChanger(cmd);
+
+                /*try { result = isSelect ? (int)ExecuteSelect(cmd) : (int)ExecuteChanger(cmd); }
+                catch { result = -1; }
+                finally { cmd.Connection.Close(); }*/
+            }
+            return result;
+        }
+        public DataTable GetFilledTable(string QuerySQL, List<SQLiteParameter> Params)
+        {
+            Table = new DataTable();
+            using (SQLiteAdapter = new SQLiteDataAdapter())
+            {
+                SQLiteAdapter.SelectCommand = GenerateSQLiteCommand(QuerySQL, Params);
+                SQLiteAdapter.SelectCommand.Connection = GetConnection;
+                SQLiteAdapter.SelectCommand.Connection.Open();
+                SQLiteAdapter.Fill(Table);
+            }
+            return Table;
+        }
+
         public static List<SQLiteParameter> GenerateRowSQLParameters(Row currRow, bool isAdd)
         {
             List<SQLiteParameter> parameters = new List<SQLiteParameter>
@@ -70,56 +109,12 @@ namespace WPFProject.Classes.Database
                 new SQLiteParameter("@paid_salary", currRow.paid_salary.ToString()),
                 new SQLiteParameter("@realize_period", currRow.realize_period.ToString()),
 
-                new SQLiteParameter("@rating", CalculateRating(currRow).ToString())
+                new SQLiteParameter("@rating", Calculate.Rating(currRow).ToString())
             };
 
             if (!isAdd) parameters.Add(new SQLiteParameter("@id", currRow.id.ToString()));
 
             return parameters;
-        }
-        public int ExecuteCommand(string QuerySQL, List<SQLiteParameter> Params)
-        {
-            int result = -1;
-            try
-            {
-                using (SQLiteConnection conn = new SQLiteConnection(GetConnectionString))
-                {
-                    conn.Open(); 
-                    result = GenerateSQLiteCommand(QuerySQL, Params).ExecuteNonQuery();
-                }
-            }
-            catch
-            {
-                result = -1;
-            }
-            finally
-            {
-                conn.Close();
-            }
-            return result;
-        }
-
-        public DataTable GetFilledTable(string QuerySQL, List<SQLiteParameter> Params)
-        {
-            SQLiteAdapter = new SQLiteDataAdapter(); Table = new DataTable();
-            try
-            {
-                using (SQLiteConnection conn = new SQLiteConnection(GetConnectionString))
-                {
-                    conn.Open();
-
-                    SQLiteAdapter.SelectCommand = GenerateSQLiteCommand(QuerySQL, Params);
-                    SQLiteAdapter.Fill(Table);
-                }
-            }
-            catch
-            {
-            }
-            finally
-            {
-                conn.Close();
-            }
-            return Table;
         }
     }
 }

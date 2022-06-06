@@ -16,32 +16,31 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
 using Excel = Microsoft.Office.Interop.Excel;
+
 using WPFProject.Classes;
+using WPFProject.Classes.Queries;
 
 namespace WPFProject.Pages
 {
 
-    public partial class DatabaseWindow : Window
+    public partial class MainViewer : Window
     {
-
-        private Database db = new Database(db_path: @"wpfproject.db");
-
         private static readonly string _rootFolder = System.IO.Path.GetDirectoryName(
             System.AppDomain.CurrentDomain.BaseDirectory);
 
-        private DataTable table;
+        private long result;
 
         private string SearchText { get => SearchTextBox.Text.ToString(); }
         private string ComboboxText { get => SearchCombobox.SelectedValue.ToString(); }
 
-        public DatabaseWindow()
+        public MainViewer()
         {
             InitializeComponent();
         }
 
         private void LoadDataGrid()
         {
-            table = this.db.GetFilledTable(Query.Select.AllMainTable, new List<SQLiteParameter> { } );
+            DataTable table = new Invest.Load().Fill();
             RefreshDatagrid(table);
         }
 
@@ -81,18 +80,14 @@ namespace WPFProject.Pages
             }
             else
             {
-                table = this.db.GetFilledTable(
-
-                    QuerySQL: new Query.Search(SearchTag: ComboboxText).GetString,
-                    Params: new List<SQLiteParameter>() { new SQLiteParameter("@content", "%"+SearchText+"%") });
-
-                RefreshDatagrid(table);
+                var table = new Invest.Load().Fill();
+                this.RefreshDatagrid(table);
             }
         }
 
         private void ClickToAddPage(object sender, RoutedEventArgs e)
         {
-            DataPage addpage = new DataPage();
+            AdditionalForm addpage = new AdditionalForm();
             addpage.Owner = this;
 
             addpage.ShowDialog();
@@ -105,7 +100,7 @@ namespace WPFProject.Pages
 
             if (DataGridView.Items.Count > 0 && selectedrow != null)
             {
-                DataPage editpage = new DataPage(currRow: selectedrow);
+                AdditionalForm editpage = new AdditionalForm(currRow: selectedrow);
                 editpage.Owner = this;
 
                 editpage.ShowDialog();
@@ -136,9 +131,8 @@ namespace WPFProject.Pages
 
                 if (answer == MessageBoxResult.Yes)
                 {
-                    int result = this.db.ExecuteCommand(
-                        QuerySQL: new Query.Delete(DeleteTag: "id").GetString,
-                        Params: new List<SQLiteParameter> { new SQLiteParameter("@content", id) });
+                    var QuerySQL = new Invest.Delete(id);
+                    result = QuerySQL.Execute();
 
                     this.LoadDataGrid();
                 }

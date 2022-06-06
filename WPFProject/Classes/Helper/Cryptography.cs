@@ -5,9 +5,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WPFProject.Classes
+namespace WPFProject.Classes.Helper
 {
-    static class Cryptography
+    public static class Cryptography
     {
         public static string HashingPass(string login, string password)
         {
