@@ -30,7 +30,7 @@ namespace WPFProject.Classes.Queries
         }
         public static class Invest
         {
-            public const string Search = "SELECT COUNT(*) FROM investTable WHERE {0} LIKE @SearchText";
+            public const string Search = "SELECT * FROM investTable WHERE {0} LIKE @SearchText";
             public const string Delete = "DELETE FROM investTable WHERE {0} = @DeleteText";
             public const string Load = "SELECT * from investTable";
             public const string Recover = 

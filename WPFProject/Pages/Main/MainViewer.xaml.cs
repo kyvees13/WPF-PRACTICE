@@ -30,8 +30,8 @@ namespace WPFProject.Pages
 
         private long result;
 
-        private string SearchText { get => SearchTextBox.Text.ToString(); }
         private string ComboboxText { get => SearchCombobox.SelectedValue.ToString(); }
+        private string SearchText { get => SearchTextBox.Text.ToString(); }
 
         public MainViewer()
         {
@@ -80,7 +80,7 @@ namespace WPFProject.Pages
             }
             else
             {
-                var table = new Invest.Load().Fill();
+                var table = new Invest.Search(SearchTag: ComboboxText, SearchText: SearchText).Fill();
                 this.RefreshDatagrid(table);
             }
         }

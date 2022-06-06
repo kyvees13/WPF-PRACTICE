@@ -65,8 +65,8 @@ namespace WPFProject.Classes.Queries
         {
             public Delete(string ID) : base(ID)
             {
-                this.Query = Queries.Constants.Invest.Delete;
-                this.parameters = new List<SQLiteParameter> { new SQLiteParameter("@DeleteText", row.id)};
+                this.Query = String.Format(Queries.Constants.Invest.Delete, arg0: "id");
+                this.parameters = new List<SQLiteParameter> { new SQLiteParameter("@DeleteText", ID)};
                 this.isSelect = false;
             }
         }

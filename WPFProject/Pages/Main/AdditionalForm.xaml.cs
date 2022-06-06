@@ -32,16 +32,16 @@ namespace WPFProject.Pages
 
             InitializeComponent();
 
-            this.Title = "Добавление новой записи ";
             row = new Row();
+            this.Title = "Добавление новой записи ";
         }
         public AdditionalForm(DataRowView currRow)
         {
             InitializeComponent();
 
+            row = new Row(currRow);
             this.Title = $"Изменение данных для записи | ID: {row.id}";
-            row = new Row(currRow); 
-            
+
         }
 
         private void LoadCombobox()
