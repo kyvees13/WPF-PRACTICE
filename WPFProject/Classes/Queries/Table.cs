@@ -12,11 +12,8 @@ using WPFProject.Classes.Data;
 
 namespace WPFProject.Classes.Queries
 {
-    public class Table
+    public class Table : Database
     {
-        // define db
-        protected private Database db;
-
         // define variables
         protected private string Query;
         protected private List<SQLiteParameter> parameters;
@@ -29,15 +26,14 @@ namespace WPFProject.Classes.Queries
         public bool QueryType { get => isSelect; set => isSelect = value; }
 
         // constructors
-        public Table() { db = new Database(db_path: "wpfproject.db"); }
-        //public Table(string QuerySQL, List<SQLiteParameter> Params) { Query = QuerySQL; parameters = Params; }
+        public Table() : base(db_path: "wpfproject.db") { }
 
         // main method execute query
-        public long Execute() { return db.ExecuteCommand(QuerySQL: QueryString, Params: QueryParameters, isSelect: QueryType); }
+        public long Execute() { return this.ExecuteCommand(QuerySQL: QueryString, Params: QueryParameters, isSelect: QueryType); }
         public RequestStatement ExecuteWithStatement() { return this.SelectorStatement(Execute()); }
 
         // set query callback in datatable
-        public DataTable Fill() { return db.GetFilledTable(QueryString, QueryParameters); }
+        public DataTable Fill() { return this.GetFilledTable(QueryString, QueryParameters); }
 
         // selector to return statement
         protected RequestStatement SelectorStatement(long result)

@@ -30,6 +30,8 @@ namespace WPFProject.Pages
 
         private long result;
 
+        private RequestStatement ExecuteStatement;
+
         private string ComboboxText { get => SearchCombobox.SelectedValue.ToString(); }
         private string SearchText { get => SearchTextBox.Text.ToString(); }
 
@@ -38,10 +40,10 @@ namespace WPFProject.Pages
             InitializeComponent();
         }
 
-        private void LoadDataGrid()
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            DataTable table = new Invest.Load().Fill();
-            RefreshDatagrid(table);
+            this.LoadDataGrid();
+            this.LoadComboboxFromDatagrid();
         }
 
         private void LoadComboboxFromDatagrid()
@@ -60,18 +62,20 @@ namespace WPFProject.Pages
             SearchCombobox.Items.Refresh();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            this.LoadDataGrid();
-            this.LoadComboboxFromDatagrid();
-        }
-
+        // обновление привязки данных 
         private void RefreshDatagrid(DataTable table)
         {
             DataGridView.DataContext = null;
             DataGridView.DataContext = table.DefaultView;
         }
 
+        // обращение SQL-запроса и перепривязка данных
+        private void LoadDataGrid()
+        {
+            RefreshDatagrid(table: new Invest.Load().Fill());
+        }
+
+        // ивент изменения текстбокса для поиска
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (SearchTextBox.Text == "" || SearchCombobox.Text == "" )
@@ -80,64 +84,71 @@ namespace WPFProject.Pages
             }
             else
             {
-                var table = new Invest.Search(SearchTag: ComboboxText, SearchText: SearchText).Fill();
-                this.RefreshDatagrid(table);
+                this.RefreshDatagrid(table: new Invest.Search(SearchTag: ComboboxText, SearchText: SearchText).Fill());
             }
         }
 
+        // ивент кнопки для перехода на формуляр добавления
         private void ClickToAddPage(object sender, RoutedEventArgs e)
         {
             AdditionalForm addpage = new AdditionalForm();
             addpage.Owner = this;
 
             addpage.ShowDialog();
-
             this.LoadDataGrid();
         }
+
+        // ивент кнопки для перехода на формуляр изменения
         private void ClickToEditPage(object sender, RoutedEventArgs e)
         {
             DataRowView selectedrow = DataGridView.SelectedItem as DataRowView;
 
-            if (DataGridView.Items.Count > 0 && selectedrow != null)
+            if (selectedrow != null)
             {
                 AdditionalForm editpage = new AdditionalForm(currRow: selectedrow);
                 editpage.Owner = this;
 
                 editpage.ShowDialog();
-
                 this.LoadDataGrid();
             }
-            else MessageBox.Show(
-                "Необходимо выбрать изменяемую запись!", 
-                "Запись не выбрана",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            else
+            {
+                MessageBox.Show( "Необходимо выбрать изменяемую запись!", "Запись не выбрана", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
         }
+
+        // ивент кнопки для удаления записи
         private void ClickToDeleteRow(object sender, RoutedEventArgs e)
         {
-
             DataRowView selectedrow = DataGridView.SelectedItem as DataRowView;
 
             if (selectedrow != null)
             {
                 string id = selectedrow.Row.ItemArray[0].ToString();
 
-                MessageBoxResult answer = MessageBox.Show(
-                    owner: Application.Current.MainWindow,
-                    $"Вы действительно хотите удалить запись? | ID: {id}",
-                    "Удаление записи",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
+                MessageBoxResult answer = MessageBox.Show( owner: Application.Current.MainWindow,
+                    $"Вы действительно хотите удалить запись? | ID: {id}", "Удаление записи", MessageBoxButton.YesNo, MessageBoxImage.Question);
 
                 if (answer == MessageBoxResult.Yes)
                 {
-                    var QuerySQL = new Invest.Delete(id);
-                    result = QuerySQL.Execute();
+                    ExecuteStatement = new Invest.Delete(id).ExecuteWithStatement();
+
+                    switch (ExecuteStatement)
+                    {
+                        case RequestStatement.POSITIVE: break;
+                        case RequestStatement.NULL: MessageBox.Show("Не удалось удалить элемент!", "Ошибка!"); break;
+                        case RequestStatement.ERROR: MessageBox.Show("Ошибка запроса!", "Ошибка базы данных!"); break;
+                        case RequestStatement.UNEXPECTED: MessageBox.Show("Непредвиденная ошибка"); break;
+                    }
 
                     this.LoadDataGrid();
-                }
+                } 
+
+                else return;
             }
         }
+
         private void ClickToDownloadExcel(object sender, RoutedEventArgs e)
         {
 
@@ -147,12 +158,7 @@ namespace WPFProject.Pages
 
             if (xlApp == null)
             {
-                MessageBox.Show(
-                    "Excel is not installed on your computer! You cant use this function.", 
-                    "Ошибка открытия файла", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
-
+                MessageBox.Show("Не удалось создать файл!", "Ошибка!", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
